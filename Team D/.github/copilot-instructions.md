@@ -1,34 +1,96 @@
-# Project: Todo AI — Copilot Workspace Instructions
+# Copilot Workspace Instructions - Todo App
 
-## Architecture
-- Monorepo: /api (Python FastAPI backend), /web (React TypeScript frontend)
-- 3-layer backend: Routes → Services → Repositories
-- Routes: no business logic, no direct DB access
-- Services: all business rules, calls repositories, raises HTTPException
-- Repositories: pure SQLAlchemy queries, no business logic, no HTTP knowledge
-- Dependency injection via FastAPI Depends() chain: get_db → Repository → Service → Route
+## Project Overview
 
-## Backend Standards
-- Python 3.11+, FastAPI, SQLAlchemy 2.x async, Pydantic v2
-- All repository and service methods must be async def
-- Use AsyncSession, async_sessionmaker, create_async_engine
-- Database: SQL Server via aioodbc driver
-- Connection string pattern: mssql+aioodbc://sa:<password>@localhost:1433/<dbname>?driver=ODBC+Driver+17+for+SQL+Server&TrustServerCertificate=yes
-- Every function must have a docstring and type hints
-- Use logging module, never print()
-- Return meaningful HTTP status codes (201 for create, 204 for delete, 404 for not found, 409 for conflict)
-- Pydantic schemas for all request/response bodies — never return ORM objects directly
+A full-stack Todo application with a Python FastAPI backend and React
+TypeScript frontend in a monorepo layout (`/api` and `/web`).
 
-## Frontend Standards
-- React 18, TypeScript strict mode, Vite bundler
-- TanStack React Query for server state, Axios for HTTP
-- Component structure: Pages → Components → Hooks → Services → Types
-- All API calls go through /web/src/services/ (Axios client layer)
-- All server state access goes through /web/src/hooks/ (React Query hooks)
-- Components never call Axios directly
+## Architecture - Backend (`/api`)
 
-## General
-- No authentication required (single-user app)
-- Every file should have clear inline comments for complex logic
-- No secrets in code — use environment variables
-- Commit messages follow Conventional Commits (feat:, fix:, chore:, docs:)
+### 3-Layer Architecture (strictly enforced)
+
+**Layer 1 - Routes (`app/routes/`)**
+- FastAPI routers only. Receive HTTP requests, validate via Pydantic schemas,
+  call Service layer, return responses.
+- No business logic. No direct DB access. No repository calls.
+
+**Layer 2 - Services (`app/services/`)**
+- All business rules live here. Call Repository layer only.
+- Raise `HTTPException` for rule violations (404, 409, etc.).
+- Call `commit()` after successful write operations.
+- No SQLAlchemy queries. No HTTP knowledge beyond HTTPException.
+
+**Layer 3 - Repositories (`app/repositories/`)**
+- All SQLAlchemy queries. Accept `AsyncSession` injected via `Depends()`.
+- Return ORM model objects.
+- No business logic. No HTTP knowledge. Pure data operations.
+
+### Dependency Injection Flow
+
+```text
+get_db() [db/session.py]
+  -> injected into Repository via Depends()
+  -> Repository injected into Service via Depends()
+  -> Service injected into Route handler via Depends()
+```
+
+### Backend Conventions
+
+- All operations are async: `AsyncSession`, `async_sessionmaker`,
+  `create_async_engine`.
+- Use `Annotated[Type, Depends()]` for dependency injection (modern FastAPI
+  style).
+- Pydantic v2 with `model_config = ConfigDict(from_attributes=True)`.
+- Repository: return `Optional[Model]` for single lookups, `list[Model]` for
+  collections.
+- Use Python `logging` module, never `print()`.
+- Return meaningful HTTP status codes: 201 (create), 204 (delete), 404/409
+  (errors).
+- Type-hint every function parameter and return value.
+- Docstrings: Google style.
+- Import order: stdlib -> third-party -> local.
+- Use f-strings for string formatting.
+- No secrets in code - use environment variables via `python-dotenv`.
+
+## Architecture - Frontend (`/web`)
+
+### Folder Structure
+
+| Folder | Purpose |
+|--------|---------|
+| `src/pages/` | Route-level page components |
+| `src/components/` | Reusable UI components |
+| `src/hooks/` | React Query hooks, one file per domain |
+| `src/services/` | Axios API client functions |
+| `src/types/` | TypeScript interfaces and types |
+| `src/utils/` | Helper/utility functions |
+
+### Frontend Conventions
+
+- Functional components with arrow function syntax only. No class components.
+- All props typed via interfaces (not inline types).
+- React Query (TanStack) for all server state - no `useState` for API data.
+- Axios instance in `src/services/api.ts` with `baseURL` from environment
+  variable.
+- Prefer named exports. Use default exports only when a routing convention
+  requires them for page files.
+- No `any` type. Use `unknown` + type narrowing if truly unknown.
+- Handle loading and error states in every component that fetches data.
+
+## Testing
+
+- Backend: pytest with `pytest-asyncio` for async tests. One test file per
+  module (e.g., `test_todo_service.py`). Test service and repository layers
+  separately.
+- Frontend: Vitest + React Testing Library. One test file per component/hook.
+- Every new public function must have at least one test.
+- Never modify test files to make them pass - fix the source code instead.
+
+## General Rules
+
+- No secrets or connection strings in code. Use environment variables.
+- Error handling on every async operation.
+- No `# type: ignore` in Python without written justification.
+- All functions must have type hints and docstrings (Python) or TSDoc
+  (TypeScript).
+- Follow Conventional Commits for commit messages.

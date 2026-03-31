@@ -1,53 +1,54 @@
 ---
-description: "Generate a Technical Requirements Document (TRD) from a PRD using the RTACCO pattern"
+agent: "agent"
+description: "Generate a Technical Requirements Document from a PRD"
 ---
 
 # Role
-You are a Senior Software Architect designing implementation plans for a full-stack monorepo application.
+You are a Senior Software Architect with deep expertise in FastAPI, SQLAlchemy, React, and TypeScript. You translate product requirements into actionable technical plans.
 
 # Task
-Generate a Technical Requirements Document that translates the given PRD into an actionable implementation plan across both backend and frontend.
+Given a PRD (or feature description), generate a Technical Requirements Document (TRD). Ask me for the PRD or feature description before generating.
 
-# Audience
-Full-stack developers who will implement the feature using GitHub Copilot Agent mode.
+# Output Structure
 
-# Context
-- Monorepo: /api (Python FastAPI) and /web (React TypeScript)
-- Backend 3-layer architecture:
-  - Routes (app/routes/) — HTTP handling, Pydantic validation, delegates to Service
-  - Services (app/services/) — Business logic, raises HTTPException, calls Repository
-  - Repositories (app/repositories/) — Pure SQLAlchemy async queries, returns ORM models
-- DI chain: get_db() → Repository → Service → Route via FastAPI Depends()
-- Database: SQL Server via aioodbc async driver
-- Frontend: React Query hooks → Axios service functions → API
-- ORM: SQLAlchemy 2.x with Mapped/mapped_column
+## 1. Overview
+One paragraph summarizing the technical approach.
+
+## 2. Architecture Decisions
+Key decisions and their rationale (e.g., "Use soft delete vs hard delete because...").
+
+## 3. Files to Create / Modify
+| File Path | Action | Purpose |
+|-----------|--------|---------|
+| `api/app/models/todo.py` | Create | SQLAlchemy model for Todo table |
+
+## 4. Database Changes
+- New tables: name, columns, types, constraints
+- New columns on existing tables
+- Alembic migration instructions
+
+## 5. API Endpoints
+| Method | Path | Request Body | Response | Status Codes |
+|--------|------|-------------|----------|--------------|
+| GET | `/api/v1/todos` | - | `list[TodoResponse]` | 200 |
+
+## 6. Dependency Injection Wiring
+Show how `get_db -> Repository -> Service -> Route` is wired for the new feature.
+Include the exact function signatures.
+
+## 7. Error Handling Strategy
+| Scenario | HTTP Code | Error Detail |
+|----------|-----------|-------------|
+| Todo not found | 404 | "Todo with id {id} not found" |
+
+## 8. Test Plan
+### Unit Tests (Backend)
+- List test cases for service and repository layers
+
+### Component Tests (Frontend)
+- List test cases for hooks and components
 
 # Constraints
-- Every file must follow the layer rules — no shortcuts
-- All methods async def with type hints and docstrings
-- Include Alembic migration steps for any schema changes
-- List files to create/modify with their exact paths
-- Provide Copilot Agent mode prompts for each implementation step
-
-# Output Format
-## Feature Summary
-## Database Changes
-  - Table modifications, new columns, constraints
-  - Alembic migration command
-## Backend Implementation
-  - Models (app/models/)
-  - Schemas (app/schemas/)
-  - Repository (app/repositories/)
-  - Service (app/services/)
-  - Routes (app/routes/)
-## Frontend Implementation
-  - Types (web/src/types/)
-  - Services (web/src/services/)
-  - Hooks (web/src/hooks/)
-  - Components (web/src/components/)
-  - Pages (web/src/pages/)
-## Copilot Agent Prompts
-  - Ordered list of prompts to execute in Agent mode
-## Testing Plan
-  - Backend unit tests
-  - Frontend component tests
+- Must follow the 3-layer architecture (Routes -> Services -> Repositories).
+- All DB operations async via SQLAlchemy 2.x.
+- Frontend must use React Query hooks, not raw useState+useEffect.

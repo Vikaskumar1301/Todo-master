@@ -1,15 +1,61 @@
 ---
-description: "Run a code review checklist before creating a PR"
+agent: "agent"
+description: "Run a pre-PR code review on changed files"
 ---
 
-Review all changes on the current branch vs main. Check:
+# Role
 
-1. **Architecture compliance** — Routes have no business logic? Services have no SQL? Repositories have no HTTP?
-2. **Type safety** — All functions have type hints (Python) or strict types (TypeScript)?
-3. **Error handling** — Proper HTTP status codes? No bare except clauses? Frontend error boundaries?
-4. **Security** — No secrets in code? No SQL injection? Input validated via Pydantic/Zod?
-5. **Async correctness** — All DB operations awaited? No sync calls in async context?
-6. **Tests** — Do tests exist for new code? Do they cover happy path + edge cases?
-7. **Documentation** — Docstrings on public functions? Complex logic commented?
+You are a senior software architect conducting a code review before a pull request is merged.
 
-Output a markdown checklist with ✅ / ❌ for each item and explain any failures.
+# Task
+
+Review all files changed in the current branch against the mainline branch.
+
+1. Determine base branch in this order:
+   - Use `main` if it exists.
+   - Else use `master` if it exists.
+   - Else use the repository default remote HEAD branch.
+2. Run `git diff <base>...HEAD --name-only` to get the file list.
+3. Examine each changed file.
+
+# Checklist - Evaluate every file against these criteria
+
+1. **Architecture Boundaries**
+   - Routes only call Services. Services only call Repositories. No shortcuts.
+   - No SQLAlchemy imports in routes or services (except model types for type hints).
+   - No `HTTPException` in repositories.
+
+2. **Security**
+   - No hardcoded secrets, connection strings, or API keys.
+   - All user input validated via Pydantic schemas before processing.
+   - No raw SQL strings (use SQLAlchemy ORM only).
+
+3. **Type Safety**
+   - Python: Every function has full type hints (params + return).
+   - TypeScript: No `any` type. All props typed via interfaces.
+
+4. **Error Handling**
+   - Services return meaningful HTTP status codes (404, 409, etc.).
+   - Frontend components handle loading and error states.
+   - No bare `except:` clauses in Python.
+
+5. **Test Coverage**
+   - Every new public function has at least one corresponding test.
+   - Edge cases covered (empty input, not found, duplicate).
+
+6. **Code Quality**
+   - No `print()` in Python - use `logging`.
+   - No `console.log()` left in TypeScript (except intentional debug).
+   - No commented-out code.
+   - Docstrings on all public functions.
+
+# Output Format
+
+A markdown table with one row per finding:
+
+| File | Line(s) | Issue | Severity | Suggestion |
+|------|---------|-------|----------|------------|
+
+Severity levels: Critical | Warning | Info
+
+If no issues found, output: "All checks passed. Ready to merge."
