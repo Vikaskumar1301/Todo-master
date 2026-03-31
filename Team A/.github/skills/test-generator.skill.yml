@@ -1,0 +1,6 @@
+name: test-generator
+description: >
+  Auto-triggered when generating tests. Enforces pytest + pytest-asyncio
+  patterns for backend and Vitest + React Testing Library for frontend.
+  Activated in Phase 2.
+# Full implementation added in Phase 2

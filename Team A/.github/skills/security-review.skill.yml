@@ -1,0 +1,6 @@
+name: security-review
+description: >
+  Auto-triggered on security review prompts. Checks for injection risks,
+  exposed secrets, insecure dependencies, and OWASP Top 10 violations.
+  Activated in Phase 5.
+# Full implementation added in Phase 5
