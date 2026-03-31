@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 description: Generate a Product Requirements Document (PRD) for a new feature using the RTACCO pattern
 ---
 

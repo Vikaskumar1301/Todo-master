@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 description: Generate a Technical Requirements Document (TRD) from a PRD using the RTACCO pattern
 ---
 

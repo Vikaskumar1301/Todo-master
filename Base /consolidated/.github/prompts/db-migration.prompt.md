@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 description: Generate and review an Alembic migration for SQLAlchemy model changes
 ---
 

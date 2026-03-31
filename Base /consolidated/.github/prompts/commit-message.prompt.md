@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 description: Generate a Conventional Commits-compliant commit message from staged git changes
 ---
 

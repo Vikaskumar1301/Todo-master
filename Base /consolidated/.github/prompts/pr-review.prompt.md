@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 description: AI-assisted code review — run before every PR merge
 ---
 
