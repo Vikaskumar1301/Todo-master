@@ -1,5 +1,5 @@
 ---
-mode: ask
+agent: ask
 description: Guide and review the process of generating an Alembic migration for async SQL Server via aioodbc.
 ---
 
